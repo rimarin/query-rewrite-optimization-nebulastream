@@ -1,0 +1,32 @@
+# ~~~ Configurations for the NES E2E Benchmark ~~~
+numberOfWorkerThreads: 1
+bufferSizeInBytes: 4096
+numberOfBuffersToProduce: 100000
+numberOfPreAllocatedBuffer: 20000
+
+# ~~~ Benchmark parameter for the entire run ~~~
+logLevel: LOG_INFO
+experimentMeasureIntervalInSeconds: 1
+startupSleepIntervalInSeconds: 1
+numberOfMeasurementsToCollect: 10
+
+logicalSources:
+  - name: input1
+    type: ysb
+    numberOfPhysicalSources: 1
+
+  - name: input2
+    type: ysb
+
+dataProvider:
+  name: Internal
+
+inputType: MemoryMode
+dataProviderMode: MemCopy
+outputFile: Q3.csv
+benchmarkName: FilterPushDown
+query: 'Query::from("input1").joinWith(Query::from("input2"))
+                             .where(Attribute("user_id")).equalsTo(Attribute("user_id"))
+                             .window(TumblingWindow::of(EventTime(Attribute("current_ms")), Milliseconds(1000)))
+                             .filter(Attribute("user_id") < 5)
+                             .sink(NullOutputSinkDescriptor::create());'
